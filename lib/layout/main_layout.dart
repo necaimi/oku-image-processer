@@ -1,0 +1,64 @@
+import 'package:flutter/material.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../theme.dart';
+import '../widgets/layout/custom_title_bar.dart';
+import '../widgets/layout/sidebar.dart';
+import '../widgets/layout/dropzone_area.dart';
+import '../widgets/layout/properties_panel.dart';
+import '../widgets/layout/history_list_view.dart';
+import '../widgets/layout/settings_view.dart';
+import '../providers/history_provider.dart';
+
+class MainLayout extends ConsumerWidget {
+  const MainLayout({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentView = ref.watch(navigationProvider);
+
+    return Scaffold(
+      body: WindowBorder(
+        color: AppColors.border,
+        width: 1,
+        child: Column(
+          children: [
+            // Top: Integrated TitleBar
+            const CustomTitleBar(),
+            
+            // Bottom: Three-Column Fluid Layout
+            Expanded(
+              child: Row(
+                children: [
+                  // Left: Navigation Sidebar
+                  const Sidebar(),
+                  
+                  // Center: Dynamic View Area
+                  Expanded(
+                    child: ClipRect(
+                      child: _buildMainContent(currentView),
+                    ),
+                  ),
+                  
+                  // Right: Parameter Properties Panel
+                  const PropertiesPanel(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainContent(AppView view) {
+    switch (view) {
+      case AppView.main:
+        return const DropzoneArea();
+      case AppView.history:
+        return const HistoryListView();
+      case AppView.settings:
+        return const SettingsView();
+    }
+  }
+}
