@@ -80,6 +80,7 @@ class SettingsView extends ConsumerWidget {
                                 child: MouseRegion(
                                   cursor: SystemMouseCursors.click,
                                   child: Row(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
                                         l10n.tr('visit_website'),

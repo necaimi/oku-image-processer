@@ -1,6 +1,6 @@
 #ifdef _WIN32
 #define NOMINMAX
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_no_WARNINGS
 #define STBI_WINDOWS_UTF8
 #define STBIW_WINDOWS_UTF8
 #include <windows.h>
@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <cstdint>
 
 // Include WebP encoding headers
 #include <webp/encode.h>
@@ -308,11 +309,44 @@ extern "C" int process_image(
 
     // --- Write Logic ---
     int write_res = -88;
-    if (format == 1) { // PNG
+    if (format == 1 || format == 3) { // PNG or ICO
         int len = 0;
         unsigned char* png_mem = stbi_write_png_to_mem(output_pixels.data(), final_w * 4, final_w, final_h, 4, &len);
         if (png_mem) {
-            write_res = write_to_file_internal(output_path, png_mem, len);
+            if (format == 3) { // ICO Header Wrapping
+                std::vector<uint8_t> ico_data;
+                ico_data.reserve(len + 22);
+                
+                // Header (6 bytes)
+                ico_data.push_back(0); ico_data.push_back(0); // Reserved
+                ico_data.push_back(1); ico_data.push_back(0); // Type (1 for icon)
+                ico_data.push_back(1); ico_data.push_back(0); // Count (1 image)
+                
+                // Directory Entry (16 bytes)
+                ico_data.push_back(final_w >= 256 ? 0 : (uint8_t)final_w);
+                ico_data.push_back(final_h >= 256 ? 0 : (uint8_t)final_h);
+                ico_data.push_back(0); // Color count
+                ico_data.push_back(0); // Reserved
+                ico_data.push_back(1); ico_data.push_back(0); // Planes
+                ico_data.push_back(32); ico_data.push_back(0); // BitCount
+                
+                uint32_t size = (uint32_t)len;
+                ico_data.push_back(size & 0xFF);
+                ico_data.push_back((size >> 8) & 0xFF);
+                ico_data.push_back((size >> 16) & 0xFF);
+                ico_data.push_back((size >> 24) & 0xFF);
+                
+                uint32_t offset = 22;
+                ico_data.push_back(offset & 0xFF);
+                ico_data.push_back((offset >> 8) & 0xFF);
+                ico_data.push_back((offset >> 16) & 0xFF);
+                ico_data.push_back((offset >> 24) & 0xFF);
+                
+                ico_data.insert(ico_data.end(), png_mem, png_mem + len);
+                write_res = write_to_file_internal(output_path, ico_data.data(), ico_data.size());
+            } else {
+                write_res = write_to_file_internal(output_path, png_mem, len);
+            }
             STBIW_FREE(png_mem);
         } else {
             write_res = -21;

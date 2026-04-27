@@ -120,94 +120,134 @@ class _UserAvatarButtonState extends ConsumerState<UserAvatarButton> with Single
   }
 
   OverlayEntry _createOverlayEntry() {
-    final l10n = ref.read(l10nProvider);
     final colors = AppColors.of(context);
-    final auth = ref.watch(authProvider);
-
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+    // The menu height is approximately 160-200px based on content.
+    // We want it to appear to the right of the button, centered vertically or aligned to bottom.
+    // Offset(size.width + 12, - (menuHeight - size.height))
+    
     return OverlayEntry(
-      builder: (context) => Stack(
-        children: [
-          // Background listener to close menu when clicking outside
-          Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: _hideMenu,
-            ),
-          ),
-          Positioned(
-            width: 180,
-            child: CompositedTransformFollower(
-              link: _layerLink,
-              showWhenUnlinked: false,
-              offset: const Offset(60, -110), // Positioned relative to avatar
-              child: GestureDetector(
-                onTap: () {}, // Prevent taps on menu from closing it via background listener
-                child: ScaleTransition(
-                  scale: _expandAnimation,
-                  alignment: Alignment.bottomLeft,
-                  child: FadeTransition(
-                    opacity: _expandAnimation,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: colors.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: colors.border, width: 1.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (auth.isLoggedIn) ...[
-                              _buildMenuItem(
-                                icon: LucideIcons.user,
-                                label: l10n.tr('user_profile'),
-                                onTap: () {
-                                  _hideMenu();
-                                  ref.read(navigationProvider.notifier).setView(AppView.profile);
-                                },
-                              ),
-                              const SizedBox(height: 4),
-                              Divider(color: colors.border, thickness: 1, height: 1),
-                              const SizedBox(height: 4),
-                              _buildMenuItem(
-                                icon: LucideIcons.log_out,
-                                label: l10n.tr('user_logout'),
-                                isDanger: true,
-                                onTap: () {
-                                  _hideMenu();
-                                  ref.read(authProvider.notifier).logout();
-                                  ref.read(navigationProvider.notifier).setView(AppView.main);
-                                },
-                              ),
-                            ] else ...[
-                              _buildMenuItem(
-                                icon: LucideIcons.log_in,
-                                label: l10n.tr('auth_login'),
-                                onTap: () {
-                                  _hideMenu();
-                                  ref.read(navigationProvider.notifier).setView(AppView.login);
-                                },
+      builder: (context) => Consumer(
+        builder: (context, ref, child) {
+          final l10n = ref.watch(l10nProvider);
+          final auth = ref.watch(authProvider);
+          
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: _hideMenu,
+                ),
+              ),
+              CompositedTransformFollower(
+                link: _layerLink,
+                showWhenUnlinked: false,
+                offset: Offset(size.width + 12.0, auth.isLoggedIn ? -140.0 : -50.0), // Dynamic vertical offset
+                child: Material(
+                  color: Colors.transparent,
+                  child: GestureDetector(
+                    onTap: () {}, 
+                    child: ScaleTransition(
+                      scale: _expandAnimation,
+                      alignment: Alignment.bottomLeft,
+                      child: FadeTransition(
+                        opacity: _expandAnimation,
+                        child: Container(
+                          width: 200,
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: colors.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: colors.border, width: 1.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
                               ),
                             ],
-                          ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (auth.isLoggedIn) ...[
+                                Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 16,
+                                        backgroundColor: colors.primary.withValues(alpha: 0.1),
+                                        child: Text(
+                                          (auth.userName ?? 'U').substring(0, 1).toUpperCase(),
+                                          style: TextStyle(color: colors.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              auth.userName ?? 'User',
+                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            Text(
+                                              auth.email ?? '',
+                                              style: TextStyle(color: colors.textSecondary, fontSize: 11),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Divider(color: colors.border, thickness: 1, height: 1),
+                                const SizedBox(height: 4),
+                                _buildMenuItem(
+                                  icon: LucideIcons.user,
+                                  label: l10n.tr('user_profile'),
+                                  onTap: () {
+                                    _hideMenu();
+                                    ref.read(navigationProvider.notifier).setView(AppView.profile);
+                                  },
+                                ),
+                                const SizedBox(height: 4),
+                                _buildMenuItem(
+                                  icon: LucideIcons.log_out,
+                                  label: l10n.tr('user_logout'),
+                                  isDanger: true,
+                                  onTap: () {
+                                    _hideMenu();
+                                    ref.read(authProvider.notifier).logout();
+                                    ref.read(navigationProvider.notifier).setView(AppView.main);
+                                  },
+                                ),
+                              ] else ...[
+                                _buildMenuItem(
+                                  icon: LucideIcons.log_in,
+                                  label: l10n.tr('auth_login'),
+                                  onTap: () {
+                                    _hideMenu();
+                                    ref.read(navigationProvider.notifier).setView(AppView.login);
+                                  },
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }

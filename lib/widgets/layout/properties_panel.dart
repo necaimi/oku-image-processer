@@ -60,7 +60,9 @@ class PropertiesPanel extends ConsumerWidget {
                         ).textTheme.labelSmall?.copyWith(letterSpacing: 2),
                       ),
                       const SizedBox(height: 12),
-                      Row(
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
                         children: [
                           FormatChip(
                             label: 'JPG',
@@ -77,6 +79,11 @@ class PropertiesPanel extends ConsumerWidget {
                             isSelected: settings.format == ImageFormat.webp,
                             onTap: () => notifier.setFormat(ImageFormat.webp),
                           ),
+                          FormatChip(
+                            label: 'ICO',
+                            isSelected: settings.format == ImageFormat.ico,
+                            onTap: () => notifier.setFormat(ImageFormat.ico),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 32),
@@ -87,7 +94,9 @@ class PropertiesPanel extends ConsumerWidget {
                         ).textTheme.labelSmall?.copyWith(letterSpacing: 2),
                       ),
                       const SizedBox(height: 12),
-                      Row(
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
                         children: [
                           FormatChip(
                             label: l10n.tr('new_dir'),

@@ -196,7 +196,7 @@ class ProcessingNotifier extends Notifier<ProcessingState> {
     } else {
       state = state.copyWith(isInitializing: true, progress: 0.0);
       try {
-        final poolSize = _getOptimalPoolSize(Platform.numberOfProcessors);
+        final poolSize = _getOptimalPoolSize(Platform.numberOfProcessors, _queue.length);
         await _initPool(poolSize);
       } finally {
         state = state.copyWith(isInitializing: false);
@@ -290,10 +290,14 @@ class ProcessingNotifier extends Notifier<ProcessingState> {
   }
 
   /// 计算最优线程池大小
-  /// 优化目标：在高性能处理与 UI 流畅度之间取得平衡，特别是在有虚拟机等背景负载的情况下。
-  /// 1. 限制上限为 6：避免磁盘 I/O 队列过深和内存带宽饱和。
-  /// 2. 动态预留：核心越多，预留给系统和虚拟机的资源越多，确保拖拽流畅。
-  int _getOptimalPoolSize(int systemProcessors) {
+  /// 优化目标：在高性能处理与 UI 流畅度之间取得平衡。
+  /// [itemCount]：当前待处理的任务总数，用于小批量任务优化。
+  int _getOptimalPoolSize(int systemProcessors, int itemCount) {
+    // 策略优化：如果处理数量少于 100 个，仅使用单线程处理。
+    // 原因：Isolate 启动和握手是有开销的。对于小批量任务，启动多个 Isolate 的总耗时
+    // 可能反而超过了单线程串行处理的时间，且单线程更省内存，UI 响应也更平滑。
+    if (itemCount < 100) return 1;
+
     if (systemProcessors <= 2) return 1;
     if (systemProcessors <= 4) return systemProcessors - 1;
     if (systemProcessors <= 8) return systemProcessors - 2;
@@ -327,7 +331,7 @@ class ProcessingNotifier extends Notifier<ProcessingState> {
       progress: 0.0,
     );
 
-    final poolSize = _getOptimalPoolSize(Platform.numberOfProcessors);
+    final poolSize = _getOptimalPoolSize(Platform.numberOfProcessors, _totalCount);
     await _initPool(poolSize);
 
     state = state.copyWith(isInitializing: false);

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme.dart';
 import '../../providers/l10n_provider.dart';
 import '../../providers/history_provider.dart';
+import '../../providers/auth_provider.dart';
 
 enum AuthTab { login, register }
 
@@ -151,11 +152,11 @@ class _AuthViewState extends ConsumerState<AuthView> {
             children: [
               // Mock QR Code
               Icon(LucideIcons.qr_code, size: 140, color: Colors.grey.shade300),
-              // WeChat Logo Overlay
+              // Mock Brand Overlay (using image icon as placeholder for wechat)
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4)),
-                child: const Icon(Icons.wechat, color: Color(0xFF07C160), size: 32),
+                child: const Icon(LucideIcons.message_circle, color: Color(0xFF07C160), size: 32),
               ),
             ],
           ),
@@ -174,10 +175,6 @@ class _AuthViewState extends ConsumerState<AuthView> {
     );
   }
 
-import '../../providers/auth_provider.dart';
-
-class AuthView extends ConsumerStatefulWidget {
-...
   Widget _buildEmailSection(L10n l10n) {
     final colors = AppColors.of(context);
     return Column(

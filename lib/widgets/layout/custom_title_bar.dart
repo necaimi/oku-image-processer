@@ -33,9 +33,12 @@ Widget build(BuildContext context) {
       child: Row(
         children: [
           const SizedBox(width: 12),
-          Icon(LucideIcons.image, size: 16, color: colors.primary),
-
-            const SizedBox(width: 8),
+          Image.asset(
+            'assets/images/oku_logo.png',
+            width: 18,
+            height: 18,
+          ),
+          const SizedBox(width: 8),
             Expanded(
               child: MoveWindow(
                 child: Align(

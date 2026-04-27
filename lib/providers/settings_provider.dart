@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum ImageFormat { jpg, png, webp }
+enum ImageFormat { jpg, png, webp, ico }
 enum ExportMode { newDirectory, overwrite }
 enum DimensionLock { none, width, height }
 enum WatermarkType { text, image }
