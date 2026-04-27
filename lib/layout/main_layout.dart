@@ -8,6 +8,8 @@ import '../widgets/layout/dropzone_area.dart';
 import '../widgets/layout/properties_panel.dart';
 import '../widgets/layout/history_list_view.dart';
 import '../widgets/layout/settings_view.dart';
+import '../widgets/layout/profile_view.dart';
+import '../widgets/layout/auth_view.dart';
 import '../providers/history_provider.dart';
 
 class MainLayout extends ConsumerWidget {
@@ -60,6 +62,10 @@ class MainLayout extends ConsumerWidget {
         return const HistoryListView();
       case AppView.settings:
         return const SettingsView();
+      case AppView.profile:
+        return const ProfileView();
+      case AppView.login:
+        return const AuthView();
     }
   }
 }
