@@ -40,8 +40,9 @@ class MainLayout extends ConsumerWidget {
                     ),
                   ),
                   
-                  // Right: Parameter Properties Panel
-                  const PropertiesPanel(),
+                  // Right: Parameter Properties Panel (Only in main view)
+                  if (currentView == AppView.main)
+                    const PropertiesPanel(),
                 ],
               ),
             ),

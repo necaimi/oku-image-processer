@@ -317,79 +317,135 @@ class PropertiesPanel extends ConsumerWidget {
                             ),
                           ),
                         const SizedBox(height: 24),
-                        Text(
-                          l10n.tr('wm_pos'),
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
-                        ),
-                        const SizedBox(height: 8),
-                        GridView.count(
-                          shrinkWrap: true,
-                          crossAxisCount: 5, // 改为 5 列以适应 10 个选项
-                          mainAxisSpacing: 4,
-                          crossAxisSpacing: 4,
-                          childAspectRatio: 1.5,
-                          physics: const NeverScrollableScrollPhysics(),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ...WatermarkPosition.values.where((p) => p != WatermarkPosition.tile).map((pos) {
-                              final isSelected = settings.watermarkPosition == pos;
-                              return GestureDetector(
-                                onTap: () => notifier.setWatermarkPosition(pos),
-                                child: Container(
+                            // --- 3x3 Position Grid ---
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.tr('wm_pos'),
+                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  width: 84,
+                                  height: 84,
+                                  padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
-                                    color: isSelected ? AppColors.of(context).primary : AppColors.of(context).surface,
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: isSelected ? AppColors.of(context).primary : AppColors.of(context).border),
+                                    color: AppColors.of(context).surface,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: AppColors.of(context).border),
                                   ),
-                                  alignment: Alignment.center,
-                                  child: Container(
-                                    width: 4,
-                                    height: 4,
-                                    decoration: BoxDecoration(
-                                      color: isSelected ? Colors.white : AppColors.of(context).textSecondary,
-                                      shape: BoxShape.circle,
+                                  child: GridView.count(
+                                    shrinkWrap: true,
+                                    crossAxisCount: 3,
+                                    mainAxisSpacing: 2,
+                                    crossAxisSpacing: 2,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    children: WatermarkPosition.values.where((p) => p != WatermarkPosition.tile).map((pos) {
+                                      final isSelected = settings.watermarkPosition == pos;
+                                      return GestureDetector(
+                                        onTap: () => notifier.setWatermarkPosition(pos),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: isSelected ? AppColors.of(context).primary : Colors.transparent,
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: Container(
+                                            width: 4,
+                                            height: 4,
+                                            decoration: BoxDecoration(
+                                              color: isSelected ? Colors.white : AppColors.of(context).textSecondary.withValues(alpha: 0.5),
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 16),
+                            // --- Tile Toggle & Spacing ---
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.tr('theme_mode').contains('外观') ? '平铺模式' : 'TILE MODE', // Simplified tile label
+                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  GestureDetector(
+                                    onTap: () => notifier.setWatermarkPosition(
+                                      settings.watermarkPosition == WatermarkPosition.tile 
+                                        ? WatermarkPosition.bottomRight 
+                                        : WatermarkPosition.tile
+                                    ),
+                                    child: Container(
+                                      height: 40,
+                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        color: settings.watermarkPosition == WatermarkPosition.tile ? AppColors.of(context).primary : AppColors.of(context).surface,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: settings.watermarkPosition == WatermarkPosition.tile ? AppColors.of(context).primary : AppColors.of(context).border),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            LucideIcons.layout_grid,
+                                            size: 16,
+                                            color: settings.watermarkPosition == WatermarkPosition.tile ? Colors.white : AppColors.of(context).textSecondary,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            l10n.tr('wm_enable').contains('启用') ? '全屏平铺' : 'Tile',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: settings.watermarkPosition == WatermarkPosition.tile ? Colors.white : AppColors.of(context).textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            }),
-                            // 平铺选项
-                            GestureDetector(
-                              onTap: () => notifier.setWatermarkPosition(WatermarkPosition.tile),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: settings.watermarkPosition == WatermarkPosition.tile ? AppColors.of(context).primary : AppColors.of(context).surface,
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: settings.watermarkPosition == WatermarkPosition.tile ? AppColors.of(context).primary : AppColors.of(context).border),
-                                ),
-                                alignment: Alignment.center,
-                                child: Icon(
-                                  LucideIcons.layout_grid,
-                                  size: 14,
-                                  color: settings.watermarkPosition == WatermarkPosition.tile ? Colors.white : AppColors.of(context).textSecondary,
-                                ),
+                                  if (settings.watermarkPosition == WatermarkPosition.tile) ...[
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          l10n.tr('wm_spacing'),
+                                          style: TextStyle(fontSize: 12, color: AppColors.of(context).textSecondary),
+                                        ),
+                                        Text('${(settings.watermarkSpacing * 100).toInt()}%', style: TextStyle(fontSize: 12, color: AppColors.of(context).primary)),
+                                      ],
+                                    ),
+                                    SliderTheme(
+                                      data: SliderTheme.of(context).copyWith(
+                                        trackHeight: 2,
+                                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                                      ),
+                                      child: Slider(
+                                        value: settings.watermarkSpacing,
+                                        min: 0.1,
+                                        max: 3.0,
+                                        onChanged: (v) => notifier.setWatermarkSpacing(v),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
                           ],
                         ),
-                        if (settings.watermarkPosition == WatermarkPosition.tile) ...[
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                l10n.tr('wm_spacing'),
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
-                              ),
-                              Text('${(settings.watermarkSpacing * 100).toInt()}%', style: TextStyle(fontSize: 12, color: AppColors.of(context).primary)),
-                            ],
-                          ),
-                          Slider(
-                            value: settings.watermarkSpacing,
-                            min: 0.1,
-                            max: 3.0,
-                            onChanged: (v) => notifier.setWatermarkSpacing(v),
-                          ),
-                        ],
                         const SizedBox(height: 24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
