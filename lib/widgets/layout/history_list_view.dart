@@ -58,11 +58,11 @@ class HistoryListView extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(LucideIcons.history, size: 48, color: AppColors.textSecondary.withValues(alpha: 0.2)),
+          Icon(LucideIcons.history, size: 48, color: AppColors.of(context).textSecondary.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           Text(
             l10n.tr('no_history'),
-            style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
+            style: TextStyle(color: AppColors.of(context).textSecondary.withValues(alpha: 0.5)),
           ),
         ],
       ),
@@ -76,9 +76,9 @@ class HistoryListView extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.of(context).border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +90,7 @@ class HistoryListView extends ConsumerWidget {
               Flexible( // 防止日期太长挤占右侧空间
                 child: Text(
                   dateStr,
-                  style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: AppColors.of(context).primary, fontSize: 12, fontWeight: FontWeight.bold),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -99,12 +99,12 @@ class HistoryListView extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: AppColors.of(context).primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   '${item.duration.inSeconds}.${(item.duration.inMilliseconds % 1000) ~/ 100}s',
-                  style: const TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: AppColors.of(context).primary, fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -112,12 +112,12 @@ class HistoryListView extends ConsumerWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(LucideIcons.files, size: 14, color: AppColors.textSecondary),
+              Icon(LucideIcons.files, size: 14, color: AppColors.of(context).textSecondary),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   l10n.tr('processed_count', [item.count.toString()]),
-                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                  style: TextStyle(color: AppColors.of(context).textPrimary, fontSize: 13),
                   softWrap: true, // 允许换行
                 ),
               ),
@@ -126,12 +126,12 @@ class HistoryListView extends ConsumerWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(LucideIcons.folder_output, size: 14, color: AppColors.textSecondary),
+              Icon(LucideIcons.folder_output, size: 14, color: AppColors.of(context).textSecondary),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   item.targetDir,
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                  style: TextStyle(color: AppColors.of(context).textSecondary, fontSize: 12),
                   maxLines: 2, // 目录较长时允许显示两行，避免溢出
                   overflow: TextOverflow.ellipsis,
                 ),

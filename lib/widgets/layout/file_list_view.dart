@@ -36,16 +36,16 @@ class FileListView extends ConsumerWidget {
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
-                            backgroundColor: AppColors.surface,
+                            backgroundColor: AppColors.of(context).surface,
                             title: Text(l10n.tr('confirm_clear_title'),
-                                style: const TextStyle(color: AppColors.textPrimary)),
+                                style: TextStyle(color: AppColors.of(context).textPrimary)),
                             content: Text(
                                 l10n.tr('confirm_clear_content'),
-                                style: const TextStyle(color: AppColors.textSecondary)),
+                                style: TextStyle(color: AppColors.of(context).textSecondary)),
                             actions: [
                               TextButton(
                                 child: Text(l10n.tr('cancel_btn'),
-                                    style: const TextStyle(color: AppColors.textSecondary)),
+                                    style: TextStyle(color: AppColors.of(context).textSecondary)),
                                 onPressed: () => Navigator.pop(context, false),
                               ),
                               TextButton(
@@ -84,9 +84,9 @@ class FileListView extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.background,
+                      color: AppColors.of(context).background,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: AppColors.of(context).border),
                     ),
                     child: Row(
                       children: [
@@ -95,11 +95,11 @@ class FileListView extends ConsumerWidget {
                           child: Container(
                             width: 40,
                             height: 40,
-                            color: AppColors.surface,
-                            child: const Icon(
+                            color: AppColors.of(context).surface,
+                            child: Icon(
                               LucideIcons.image,
                               size: 20,
-                              color: AppColors.textSecondary,
+                              color: AppColors.of(context).textSecondary,
                             ),
                           ),
                         ),
@@ -122,9 +122,9 @@ class FileListView extends ConsumerWidget {
                               const SizedBox(height: 2),
                               Text(
                                 '${(item.size / 1024).toStringAsFixed(1)} KB',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.textSecondary,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.of(context).textSecondary,
                                 ),
                               ),
                             ],
@@ -135,7 +135,7 @@ class FileListView extends ConsumerWidget {
                           icon: Icon(
                             LucideIcons.x,
                             size: 16,
-                            color: isProcessing ? Colors.grey.withValues(alpha: 0.3) : AppColors.textSecondary,
+                            color: isProcessing ? Colors.grey.withValues(alpha: 0.3) : AppColors.of(context).textSecondary,
                           ),
                           onPressed: isProcessing ? null : () => ref
                               .read(fileListProvider.notifier)

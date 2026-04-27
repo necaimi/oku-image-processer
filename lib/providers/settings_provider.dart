@@ -1,10 +1,18 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum ImageFormat { jpg, png, webp }
 enum ExportMode { newDirectory, overwrite }
 enum DimensionLock { none, width, height }
+enum WatermarkType { text, image }
+enum WatermarkPosition { 
+  topLeft, topCenter, topRight, 
+  centerLeft, center, centerRight, 
+  bottomLeft, bottomCenter, bottomRight,
+  tile 
+}
 
 class ProcessingSettings {
   final ImageFormat format;
@@ -18,6 +26,18 @@ class ProcessingSettings {
   final DimensionLock dimensionLock;
   final String language;
   final double fontSizeFactor;
+  final ThemeMode themeMode;
+
+  // Watermark Settings
+  final bool enableWatermark;
+  final WatermarkType watermarkType;
+  final String watermarkText;
+  final String? watermarkImagePath;
+  final double watermarkOpacity;
+  final WatermarkPosition watermarkPosition;
+  final double watermarkScale; // For image: 0.1 - 1.0 of main image width
+  final int watermarkFontSize; // For text
+  final double watermarkSpacing; // New: Spacing for tile mode
 
   ProcessingSettings({
     this.format = ImageFormat.jpg,
@@ -30,6 +50,16 @@ class ProcessingSettings {
     this.dimensionLock = DimensionLock.none,
     this.language = 'zh',
     this.fontSizeFactor = 1.0,
+    this.themeMode = ThemeMode.dark,
+    this.enableWatermark = false,
+    this.watermarkType = WatermarkType.text,
+    this.watermarkText = 'Oku Image',
+    this.watermarkImagePath,
+    this.watermarkOpacity = 0.5,
+    this.watermarkPosition = WatermarkPosition.bottomRight,
+    this.watermarkScale = 0.2,
+    this.watermarkFontSize = 40,
+    this.watermarkSpacing = 1.0,
     double? aspectRatio,
   }) : aspectRatio = aspectRatio ?? (1920 / 1080);
 
@@ -45,6 +75,16 @@ class ProcessingSettings {
     'dimensionLock': dimensionLock.index,
     'language': language,
     'fontSizeFactor': fontSizeFactor,
+    'themeMode': themeMode.index,
+    'enableWatermark': enableWatermark,
+    'watermarkType': watermarkType.index,
+    'watermarkText': watermarkText,
+    'watermarkImagePath': watermarkImagePath,
+    'watermarkOpacity': watermarkOpacity,
+    'watermarkPosition': watermarkPosition.index,
+    'watermarkScale': watermarkScale,
+    'watermarkFontSize': watermarkFontSize,
+    'watermarkSpacing': watermarkSpacing,
   };
 
   factory ProcessingSettings.fromJson(Map<String, dynamic> json) {
@@ -60,6 +100,16 @@ class ProcessingSettings {
       dimensionLock: DimensionLock.values[json['dimensionLock'] ?? 0],
       language: json['language'] ?? 'zh',
       fontSizeFactor: json['fontSizeFactor'] ?? 1.0,
+      themeMode: ThemeMode.values[json['themeMode'] ?? 2], // Default to dark (index 2)
+      enableWatermark: json['enableWatermark'] ?? false,
+      watermarkType: WatermarkType.values[json['watermarkType'] ?? 0],
+      watermarkText: json['watermarkText'] ?? 'Oku Image',
+      watermarkImagePath: json['watermarkImagePath'],
+      watermarkOpacity: json['watermarkOpacity'] ?? 0.5,
+      watermarkPosition: WatermarkPosition.values[json['watermarkPosition'] ?? 8],
+      watermarkScale: json['watermarkScale'] ?? 0.2,
+      watermarkFontSize: json['watermarkFontSize'] ?? 40,
+      watermarkSpacing: json['watermarkSpacing'] ?? 1.0,
     );
   }
 
@@ -75,6 +125,16 @@ class ProcessingSettings {
     DimensionLock? dimensionLock,
     String? language,
     double? fontSizeFactor,
+    ThemeMode? themeMode,
+    bool? enableWatermark,
+    WatermarkType? watermarkType,
+    String? watermarkText,
+    String? watermarkImagePath,
+    double? watermarkOpacity,
+    WatermarkPosition? watermarkPosition,
+    double? watermarkScale,
+    int? watermarkFontSize,
+    double? watermarkSpacing,
   }) {
     return ProcessingSettings(
       format: format ?? this.format,
@@ -88,6 +148,16 @@ class ProcessingSettings {
       dimensionLock: dimensionLock ?? this.dimensionLock,
       language: language ?? this.language,
       fontSizeFactor: fontSizeFactor ?? this.fontSizeFactor,
+      themeMode: themeMode ?? this.themeMode,
+      enableWatermark: enableWatermark ?? this.enableWatermark,
+      watermarkType: watermarkType ?? this.watermarkType,
+      watermarkText: watermarkText ?? this.watermarkText,
+      watermarkImagePath: watermarkImagePath ?? this.watermarkImagePath,
+      watermarkOpacity: watermarkOpacity ?? this.watermarkOpacity,
+      watermarkPosition: watermarkPosition ?? this.watermarkPosition,
+      watermarkScale: watermarkScale ?? this.watermarkScale,
+      watermarkFontSize: watermarkFontSize ?? this.watermarkFontSize,
+      watermarkSpacing: watermarkSpacing ?? this.watermarkSpacing,
     );
   }
 }
@@ -173,6 +243,19 @@ class SettingsNotifier extends Notifier<ProcessingSettings> {
       updateState(state.copyWith(lockAspectRatio: false));
     }
   }
+
+  void setThemeMode(ThemeMode mode) => updateState(state.copyWith(themeMode: mode));
+
+  // Watermark updates
+  void setEnableWatermark(bool enable) => updateState(state.copyWith(enableWatermark: enable));
+  void setWatermarkType(WatermarkType type) => updateState(state.copyWith(watermarkType: type));
+  void setWatermarkText(String text) => updateState(state.copyWith(watermarkText: text));
+  void setWatermarkImagePath(String? path) => updateState(state.copyWith(watermarkImagePath: path));
+  void setWatermarkOpacity(double opacity) => updateState(state.copyWith(watermarkOpacity: opacity));
+  void setWatermarkPosition(WatermarkPosition pos) => updateState(state.copyWith(watermarkPosition: pos));
+  void setWatermarkScale(double scale) => updateState(state.copyWith(watermarkScale: scale));
+  void setWatermarkFontSize(int size) => updateState(state.copyWith(watermarkFontSize: size));
+  void setWatermarkSpacing(double spacing) => updateState(state.copyWith(watermarkSpacing: spacing));
 }
 
 final settingsProvider = NotifierProvider<SettingsNotifier, ProcessingSettings>(SettingsNotifier.new);

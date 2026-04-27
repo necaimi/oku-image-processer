@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as p;
 import '../../theme.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/file_provider.dart';
@@ -35,9 +36,9 @@ class PropertiesPanel extends ConsumerWidget {
 
     return Container(
       width: 300,
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(left: BorderSide(color: AppColors.border)),
+      decoration: BoxDecoration(
+        color: AppColors.of(context).background,
+        border: Border(left: BorderSide(color: AppColors.of(context).border)),
       ),
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 300),
@@ -107,26 +108,26 @@ class PropertiesPanel extends ConsumerWidget {
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppColors.surface,
+                              color: AppColors.of(context).surface,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.border),
+                              border: Border.all(color: AppColors.of(context).border),
                             ),
                             child: Row(
                               children: [
-                                const Icon(LucideIcons.folder_open,
-                                    size: 14, color: AppColors.primary),
+                                Icon(LucideIcons.folder_open,
+                                    size: 14, color: AppColors.of(context).primary),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     settings.customOutputPath ?? 'Default: ./oku_output',
-                                    style: const TextStyle(
-                                        fontSize: 11, color: AppColors.textSecondary),
+                                    style: TextStyle(
+                                        fontSize: 12, color: AppColors.of(context).textSecondary),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                const Icon(LucideIcons.chevron_right,
-                                    size: 12, color: AppColors.textSecondary),
+                                Icon(LucideIcons.chevron_right,
+                                    size: 12, color: AppColors.of(context).textSecondary),
                               ],
                             ),
                           ),
@@ -175,8 +176,8 @@ class PropertiesPanel extends ConsumerWidget {
                                           : LucideIcons.lock_open,
                                       size: 14,
                                       color: settings.lockAspectRatio
-                                          ? AppColors.primary
-                                          : AppColors.textSecondary,
+                                          ? AppColors.of(context).primary
+                                          : AppColors.of(context).textSecondary,
                                     ),
                                     tooltip: l10n.tr('tip_lock_ratio'),
                                   ),
@@ -224,16 +225,16 @@ class PropertiesPanel extends ConsumerWidget {
                             '${(settings.quality * 100).toInt()}%',
                             style: Theme.of(
                               context,
-                            ).textTheme.bodySmall?.copyWith(color: AppColors.primary),
+                            ).textTheme.bodySmall?.copyWith(color: AppColors.of(context).primary),
                           ),
                         ],
                       ),
                       SliderTheme(
                         data: SliderTheme.of(context).copyWith(
-                          activeTrackColor: AppColors.primary,
-                          inactiveTrackColor: AppColors.surface,
-                          thumbColor: AppColors.primary,
-                          overlayColor: AppColors.glow,
+                          activeTrackColor: AppColors.of(context).primary,
+                          inactiveTrackColor: AppColors.of(context).surface,
+                          thumbColor: AppColors.of(context).primary,
+                          overlayColor: AppColors.of(context).glow,
                           trackHeight: 4,
                         ),
                         child: Slider(
@@ -241,6 +242,200 @@ class PropertiesPanel extends ConsumerWidget {
                           onChanged: (v) => notifier.setQuality(v),
                         ),
                       ),
+                      const SizedBox(height: 32),
+                      // --- Watermark Section ---
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.tr('watermark'),
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 2),
+                          ),
+                          Switch(
+                            value: settings.enableWatermark,
+                            onChanged: (v) => notifier.setEnableWatermark(v),
+                            activeColor: AppColors.of(context).primary,
+                          ),
+                        ],
+                      ),
+                      if (settings.enableWatermark) ...[
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            FormatChip(
+                              label: l10n.tr('wm_text'),
+                              isSelected: settings.watermarkType == WatermarkType.text,
+                              onTap: () => notifier.setWatermarkType(WatermarkType.text),
+                            ),
+                            FormatChip(
+                              label: l10n.tr('wm_image'),
+                              isSelected: settings.watermarkType == WatermarkType.image,
+                              onTap: () => notifier.setWatermarkType(WatermarkType.image),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        if (settings.watermarkType == WatermarkType.text)
+                          InputRow(
+                            label: l10n.tr('wm_content'),
+                            value: settings.watermarkText,
+                            onChanged: (v) => notifier.setWatermarkText(v),
+                          )
+                        else
+                          GestureDetector(
+                            onTap: () async {
+                              final result = await FilePicker.pickFiles(
+                                type: FileType.image,
+                              );
+                              if (result != null) {
+                                notifier.setWatermarkImagePath(result.files.single.path);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.of(context).surface,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppColors.of(context).border),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(LucideIcons.image, size: 14, color: AppColors.of(context).primary),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      settings.watermarkImagePath != null 
+                                          ? p.basename(settings.watermarkImagePath!) 
+                                          : l10n.tr('wm_pick_img'),
+                                      style: TextStyle(fontSize: 12, color: AppColors.of(context).textSecondary),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 24),
+                        Text(
+                          l10n.tr('wm_pos'),
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
+                        ),
+                        const SizedBox(height: 8),
+                        GridView.count(
+                          shrinkWrap: true,
+                          crossAxisCount: 5, // 改为 5 列以适应 10 个选项
+                          mainAxisSpacing: 4,
+                          crossAxisSpacing: 4,
+                          childAspectRatio: 1.5,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: [
+                            ...WatermarkPosition.values.where((p) => p != WatermarkPosition.tile).map((pos) {
+                              final isSelected = settings.watermarkPosition == pos;
+                              return GestureDetector(
+                                onTap: () => notifier.setWatermarkPosition(pos),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? AppColors.of(context).primary : AppColors.of(context).surface,
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(color: isSelected ? AppColors.of(context).primary : AppColors.of(context).border),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Container(
+                                    width: 4,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? Colors.white : AppColors.of(context).textSecondary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                            // 平铺选项
+                            GestureDetector(
+                              onTap: () => notifier.setWatermarkPosition(WatermarkPosition.tile),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: settings.watermarkPosition == WatermarkPosition.tile ? AppColors.of(context).primary : AppColors.of(context).surface,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: settings.watermarkPosition == WatermarkPosition.tile ? AppColors.of(context).primary : AppColors.of(context).border),
+                                ),
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  LucideIcons.layout_grid,
+                                  size: 14,
+                                  color: settings.watermarkPosition == WatermarkPosition.tile ? Colors.white : AppColors.of(context).textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (settings.watermarkPosition == WatermarkPosition.tile) ...[
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                l10n.tr('wm_spacing'),
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
+                              ),
+                              Text('${(settings.watermarkSpacing * 100).toInt()}%', style: TextStyle(fontSize: 12, color: AppColors.of(context).primary)),
+                            ],
+                          ),
+                          Slider(
+                            value: settings.watermarkSpacing,
+                            min: 0.1,
+                            max: 3.0,
+                            onChanged: (v) => notifier.setWatermarkSpacing(v),
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              l10n.tr('wm_opacity'),
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
+                            ),
+                            Text('${(settings.watermarkOpacity * 100).toInt()}%', style: TextStyle(fontSize: 12, color: AppColors.of(context).primary)),
+                          ],
+                        ),
+                        Slider(
+                          value: settings.watermarkOpacity,
+                          onChanged: (v) => notifier.setWatermarkOpacity(v),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              settings.watermarkType == WatermarkType.image ? l10n.tr('wm_scale') : l10n.tr('wm_size'),
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
+                            ),
+                            Text(
+                              settings.watermarkType == WatermarkType.image 
+                                  ? '${(settings.watermarkScale * 100).toInt()}%'
+                                  : '${settings.watermarkFontSize}px', 
+                              style: TextStyle(fontSize: 12, color: AppColors.of(context).primary),
+                            ),
+                          ],
+                        ),
+                        if (settings.watermarkType == WatermarkType.image)
+                          Slider(
+                            value: settings.watermarkScale,
+                            min: 0.05,
+                            max: 0.5,
+                            onChanged: (v) => notifier.setWatermarkScale(v),
+                          )
+                        else
+                          Slider(
+                            value: settings.watermarkFontSize.toDouble(),
+                            min: 12,
+                            max: 200,
+                            onChanged: (v) => notifier.setWatermarkFontSize(v.toInt()),
+                          ),
+                      ],
                     ],
                   ),
                 ),
@@ -256,15 +451,15 @@ class PropertiesPanel extends ConsumerWidget {
                     gradient: LinearGradient(
                       colors: proc.isProcessing || fileState.files.isEmpty
                           ? [Colors.grey.shade800, Colors.grey.shade900]
-                          : [AppColors.primary, const Color(0xFF0055FF)],
+                          : [AppColors.of(context).primary, const Color(0xFF0055FF)],
                     ),
                     boxShadow: proc.isProcessing || fileState.files.isEmpty
                         ? null
-                        : const [
+                        : [
                             BoxShadow(
-                              color: AppColors.glow,
+                              color: AppColors.of(context).glow,
                               blurRadius: 12,
-                              offset: Offset(0, 4),
+                              offset: const Offset(0, 4),
                             ),
                           ],
                   ),

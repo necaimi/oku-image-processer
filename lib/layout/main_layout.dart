@@ -19,7 +19,7 @@ class MainLayout extends ConsumerWidget {
 
     return Scaffold(
       body: WindowBorder(
-        color: AppColors.border,
+        color: AppColors.of(context).border,
         width: 1,
         child: Column(
           children: [

@@ -46,6 +46,7 @@ class _InputRowState extends State<InputRow> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -53,17 +54,17 @@ class _InputRowState extends State<InputRow> {
           widget.label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: widget.enabled
-                    ? AppColors.textPrimary
-                    : AppColors.textSecondary,
+                    ? colors.textPrimary
+                    : colors.textSecondary,
               ),
         ),
         Container(
           width: 80,
           height: 36,
           decoration: BoxDecoration(
-            color: widget.enabled ? AppColors.surface : AppColors.background,
+            color: widget.enabled ? colors.surface : colors.background,
             borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: colors.border),
           ),
           child: TextField(
             controller: _controller,
@@ -74,8 +75,8 @@ class _InputRowState extends State<InputRow> {
             style: TextStyle(
               fontSize: 13,
               color: widget.enabled
-                  ? AppColors.textPrimary
-                  : AppColors.textSecondary,
+                  ? colors.textPrimary
+                  : colors.textSecondary,
             ),
             decoration: const InputDecoration(
               border: InputBorder.none,

@@ -11,6 +11,15 @@ typedef ProcessImageC = ffi.Int32 Function(
   ffi.Int32 height,
   ffi.Int32 quality,
   ffi.Int32 format,
+  ffi.Int32 enableWm,
+  ffi.Int32 wmType,
+  ffi.Pointer<Utf8> wmText,
+  ffi.Pointer<Utf8> wmImagePath,
+  ffi.Float wmOpacity,
+  ffi.Int32 wmPosition,
+  ffi.Float wmScale,
+  ffi.Int32 wmFontSize,
+  ffi.Float wmSpacing,
 );
 
 // 定义 Dart 函数的签名
@@ -21,6 +30,15 @@ typedef ProcessImageDart = int Function(
   int height,
   int quality,
   int format,
+  int enableWm,
+  int wmType,
+  ffi.Pointer<Utf8> wmText,
+  ffi.Pointer<Utf8> wmImagePath,
+  double wmOpacity,
+  int wmPosition,
+  double wmScale,
+  int wmFontSize,
+  double wmSpacing,
 );
 
 class ImageProcessor {
@@ -61,15 +79,44 @@ class ImageProcessor {
     int height,
     int quality,
     int format,
+    bool enableWm,
+    int wmType,
+    String wmText,
+    String? wmImagePath,
+    double wmOpacity,
+    int wmPosition,
+    double wmScale,
+    int wmFontSize,
+    double wmSpacing,
   ) {
     final inputPtr = inputPath.toNativeUtf8();
     final outputPtr = outputPath.toNativeUtf8();
+    final wmTextPtr = wmText.toNativeUtf8();
+    final wmImagePathPtr = (wmImagePath ?? '').toNativeUtf8();
 
     try {
-      return _processImage(inputPtr, outputPtr, width, height, quality, format);
+      return _processImage(
+        inputPtr, 
+        outputPtr, 
+        width, 
+        height, 
+        quality, 
+        format,
+        enableWm ? 1 : 0,
+        wmType,
+        wmTextPtr,
+        wmImagePathPtr,
+        wmOpacity,
+        wmPosition,
+        wmScale,
+        wmFontSize,
+        wmSpacing,
+      );
     } finally {
       malloc.free(inputPtr);
       malloc.free(outputPtr);
+      malloc.free(wmTextPtr);
+      malloc.free(wmImagePathPtr);
     }
   }
 }

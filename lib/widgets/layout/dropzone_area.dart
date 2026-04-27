@@ -31,16 +31,16 @@ class _DropzoneAreaState extends ConsumerState<DropzoneArea> {
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: _isDragging
-            ? AppColors.primary.withValues(alpha: 0.05)
-            : AppColors.surface,
+            ? AppColors.of(context).primary.withValues(alpha: 0.05)
+            : AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: _isDragging ? AppColors.primary : AppColors.border,
+          color: _isDragging ? AppColors.of(context).primary : AppColors.of(context).border,
           width: 2,
           style: !hasFiles ? BorderStyle.solid : BorderStyle.none,
         ),
         boxShadow: _isDragging
-            ? [const BoxShadow(color: AppColors.glow, blurRadius: 20)]
+            ? [BoxShadow(color: AppColors.of(context).glow, blurRadius: 20)]
             : null,
       ),
       child: Stack(
@@ -73,16 +73,16 @@ class _DropzoneAreaState extends ConsumerState<DropzoneArea> {
   Widget _buildScanningOverlay(L10n l10n) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.background.withValues(alpha: 0.7),
+        color: AppColors.of(context).background.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(
+            CircularProgressIndicator(
               strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.of(context).primary),
             ),
             const SizedBox(height: 20),
             Text(
@@ -111,14 +111,14 @@ class _DropzoneAreaState extends ConsumerState<DropzoneArea> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: AppColors.of(context).background,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: AppColors.of(context).border),
             ),
-            child: const Icon(
+            child: Icon(
               LucideIcons.plus,
               size: 32,
-              color: AppColors.primary,
+              color: AppColors.of(context).primary,
             ),
           ),
           const SizedBox(height: 16),
@@ -139,7 +139,7 @@ class _DropzoneAreaState extends ConsumerState<DropzoneArea> {
   Widget _buildProcessingOverlay(ProcessingState proc, L10n l10n) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.background.withValues(alpha: 0.95),
+        color: AppColors.of(context).background.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
@@ -150,8 +150,8 @@ class _DropzoneAreaState extends ConsumerState<DropzoneArea> {
               width: 240,
               child: LinearProgressIndicator(
                 value: proc.progress > 0 ? proc.progress : null,
-                backgroundColor: AppColors.surface,
-                color: proc.isPaused ? Colors.orangeAccent : AppColors.primary,
+                backgroundColor: AppColors.of(context).surface,
+                color: proc.isPaused ? Colors.orangeAccent : AppColors.of(context).primary,
                 minHeight: 6,
                 borderRadius: BorderRadius.circular(3),
               ),
@@ -161,11 +161,11 @@ class _DropzoneAreaState extends ConsumerState<DropzoneArea> {
               proc.isInitializing 
                 ? '${l10n.tr('init_engine')}...' 
                 : '[${proc.current}/${proc.total}] ${(proc.progress * 100).toInt()}%',
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 18, 
                   fontWeight: FontWeight.bold, 
                   letterSpacing: 1,
-                  color: AppColors.textPrimary,
+                  color: AppColors.of(context).textPrimary,
               ),
             ),
             const SizedBox(height: 8),
@@ -173,14 +173,14 @@ class _DropzoneAreaState extends ConsumerState<DropzoneArea> {
               proc.isInitializing 
                 ? l10n.tr('handshake')
                 : (proc.isPaused ? l10n.tr('pause') : l10n.tr('processing')),
-              style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 12, color: AppColors.of(context).primary, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 4),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
                 proc.currentFileName,
-                style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 12, color: AppColors.of(context).textSecondary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
@@ -194,7 +194,7 @@ class _DropzoneAreaState extends ConsumerState<DropzoneArea> {
                   OverlayButton(
                     icon: proc.isPaused ? LucideIcons.play : LucideIcons.pause,
                     label: proc.isPaused ? l10n.tr('resume') : l10n.tr('pause'),
-                    color: proc.isPaused ? AppColors.primary : Colors.orangeAccent,
+                    color: proc.isPaused ? AppColors.of(context).primary : Colors.orangeAccent,
                     onTap: () => ref.read(processingProvider.notifier).togglePause(),
                   ),
                   const SizedBox(width: 16),

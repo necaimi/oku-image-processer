@@ -39,7 +39,9 @@ class OkuApp extends ConsumerWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Oku Image Processor',
-      theme: getAppTheme(),
+      theme: getAppTheme(ThemeMode.light),
+      darkTheme: getAppTheme(ThemeMode.dark),
+      themeMode: settings.themeMode,
       locale: Locale(settings.language),
       home: const MainLayout(),
       builder: (context, child) {

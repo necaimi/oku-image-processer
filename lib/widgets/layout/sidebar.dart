@@ -17,9 +17,9 @@ class Sidebar extends ConsumerWidget {
 
     return Container(
       width: 72,
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(right: BorderSide(color: AppColors.border, width: 1)),
+      decoration: BoxDecoration(
+        color: AppColors.of(context).background,
+        border: Border(right: BorderSide(color: AppColors.of(context).border, width: 1)),
       ),
       child: IgnorePointer(
         ignoring: isProcessing,
@@ -81,13 +81,13 @@ class _SidebarIcon extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: isSelected
               ? BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: AppColors.of(context).primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 )
               : null,
           child: Icon(
             icon,
-            color: isSelected ? AppColors.primary : AppColors.textSecondary,
+            color: isSelected ? AppColors.of(context).primary : AppColors.of(context).textSecondary,
             size: 20,
           ),
         ),

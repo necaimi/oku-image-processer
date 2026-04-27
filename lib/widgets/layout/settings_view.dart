@@ -33,6 +33,30 @@ class SettingsView extends ConsumerWidget {
             children: [
               _buildSection(
                 context,
+                l10n.tr('theme_mode'),
+                Row(
+                  children: [
+                    FormatChip(
+                      label: l10n.tr('theme_light'),
+                      isSelected: settings.themeMode == ThemeMode.light,
+                      onTap: () => notifier.setThemeMode(ThemeMode.light),
+                    ),
+                    FormatChip(
+                      label: l10n.tr('theme_dark'),
+                      isSelected: settings.themeMode == ThemeMode.dark,
+                      onTap: () => notifier.setThemeMode(ThemeMode.dark),
+                    ),
+                    FormatChip(
+                      label: l10n.tr('theme_system'),
+                      isSelected: settings.themeMode == ThemeMode.system,
+                      onTap: () => notifier.setThemeMode(ThemeMode.system),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              _buildSection(
+                context,
                 l10n.tr('language'),
                 Row(
                   children: [
@@ -55,17 +79,17 @@ class SettingsView extends ConsumerWidget {
                 '${l10n.tr('font_size')} (${(settings.fontSizeFactor * 100).toInt()}%)',
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
-                    activeTrackColor: AppColors.primary,
-                    inactiveTrackColor: AppColors.surface,
-                    thumbColor: AppColors.primary,
-                    overlayColor: AppColors.glow,
+                    activeTrackColor: AppColors.of(context).primary,
+                    inactiveTrackColor: AppColors.of(context).surface,
+                    thumbColor: AppColors.of(context).primary,
+                    overlayColor: AppColors.of(context).glow,
                     trackHeight: 4,
                   ),
                   child: Slider(
                     value: settings.fontSizeFactor,
-                    min: 0.8,
+                    min: 1.0,
                     max: 1.4,
-                    divisions: 6,
+                    divisions: 4,
                     onChanged: (v) => notifier.setFontSizeFactor(v),
                   ),
                 ),
@@ -83,7 +107,7 @@ class SettingsView extends ConsumerWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          style: TextStyle(color: AppColors.of(context).textSecondary, fontSize: 12),
         ),
         const SizedBox(height: 12),
         content,

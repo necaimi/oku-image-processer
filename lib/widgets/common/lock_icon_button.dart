@@ -25,17 +25,17 @@ class LockIconButton extends StatelessWidget {
           height: 36,
           decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.primary.withValues(alpha: 0.1)
-                : AppColors.surface,
+                ? AppColors.of(context).primary.withValues(alpha: 0.1)
+                : AppColors.of(context).surface,
             borderRadius: BorderRadius.circular(6),
             border: Border.all(
-              color: isSelected ? AppColors.primary : AppColors.border,
+              color: isSelected ? AppColors.of(context).primary : AppColors.of(context).border,
             ),
           ),
           child: Icon(
             LucideIcons.target,
             size: 14,
-            color: isSelected ? AppColors.primary : AppColors.textSecondary,
+            color: isSelected ? AppColors.of(context).primary : AppColors.of(context).textSecondary,
           ),
         ),
       ),

@@ -27,7 +27,16 @@ FFI_EXPORT int process_image(
     int width, 
     int height, 
     int quality,
-    int format
+    int format,
+    int enable_wm,
+    int wm_type,
+    const char* wm_text,
+    const char* wm_image_path,
+    float wm_opacity,
+    int wm_position,
+    float wm_scale,
+    int wm_font_size,
+    float wm_spacing
 );
 
 #ifdef __cplusplus

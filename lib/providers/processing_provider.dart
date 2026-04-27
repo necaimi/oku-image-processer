@@ -18,6 +18,17 @@ class ProcessingParams {
   final int quality;
   final int format;
 
+  // Watermark
+  final bool enableWm;
+  final int wmType;
+  final String wmText;
+  final String? wmImagePath;
+  final double wmOpacity;
+  final int wmPosition;
+  final double wmScale;
+  final int wmFontSize;
+  final double wmSpacing;
+
   ProcessingParams({
     required this.inputPath,
     required this.outputPath,
@@ -25,6 +36,15 @@ class ProcessingParams {
     required this.height,
     required this.quality,
     required this.format,
+    this.enableWm = false,
+    this.wmType = 0,
+    this.wmText = '',
+    this.wmImagePath,
+    this.wmOpacity = 0.5,
+    this.wmPosition = 0,
+    this.wmScale = 0.2,
+    this.wmFontSize = 40,
+    this.wmSpacing = 1.0,
   });
 }
 
@@ -59,6 +79,15 @@ void _isolateEntry(SendPort mainSendPort) {
           message.params.height,
           message.params.quality,
           message.params.format,
+          message.params.enableWm,
+          message.params.wmType,
+          message.params.wmText,
+          message.params.wmImagePath,
+          message.params.wmOpacity,
+          message.params.wmPosition,
+          message.params.wmScale,
+          message.params.wmFontSize,
+          message.params.wmSpacing,
         );
         mainSendPort.send(WorkerResponse(message.workerId, res, message.sessionId));
       } catch (e, stack) {
@@ -374,6 +403,15 @@ class ProcessingNotifier extends Notifier<ProcessingState> {
       height: targetH,
       quality: (settings.quality * 100).toInt(),
       format: settings.format.index,
+      enableWm: settings.enableWatermark,
+      wmType: settings.watermarkType.index,
+      wmText: settings.watermarkText,
+      wmImagePath: settings.watermarkImagePath,
+      wmOpacity: settings.watermarkOpacity,
+      wmPosition: settings.watermarkPosition.index,
+      wmScale: settings.watermarkScale,
+      wmFontSize: settings.watermarkFontSize,
+      wmSpacing: settings.watermarkSpacing,
     );
   }
 }

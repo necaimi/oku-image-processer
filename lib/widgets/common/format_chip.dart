@@ -15,6 +15,7 @@ class FormatChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -22,13 +23,13 @@ class FormatChip extends StatelessWidget {
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surface,
+          color: isSelected ? colors.primary : colors.surface,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
+            color: isSelected ? colors.primary : colors.border,
           ),
           boxShadow: isSelected
-              ? [const BoxShadow(color: AppColors.glow, blurRadius: 8)]
+              ? [BoxShadow(color: colors.glow, blurRadius: 8)]
               : null,
         ),
         child: Text(
@@ -36,7 +37,7 @@ class FormatChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : AppColors.textSecondary,
+            color: isSelected ? Colors.white : colors.textSecondary,
           ),
         ),
       ),
