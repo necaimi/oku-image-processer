@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:cross_file/cross_file.dart';
 import '../../theme.dart';
 import '../../providers/file_provider.dart';
 import '../../providers/processing_provider.dart';
@@ -18,6 +20,31 @@ class DropzoneArea extends ConsumerStatefulWidget {
 
 class _DropzoneAreaState extends ConsumerState<DropzoneArea> {
   bool _isDragging = false;
+
+  Future<void> _pickFiles() async {
+    final result = await FilePicker.pickFiles(
+      allowMultiple: true,
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'webp'],
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      final xFiles = result.files
+          .where((f) => f.path != null)
+          .map((f) => XFile(f.path!))
+          .toList();
+      if (xFiles.isNotEmpty) {
+        ref.read(fileListProvider.notifier).addFiles(xFiles);
+      }
+    }
+  }
+
+  Future<void> _pickDirectory() async {
+    final path = await FilePicker.getDirectoryPath();
+    if (path != null) {
+      ref.read(fileListProvider.notifier).addFiles([XFile(path)]);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,17 +148,65 @@ class _DropzoneAreaState extends ConsumerState<DropzoneArea> {
               color: AppColors.of(context).primary,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Text(
             l10n.tr('drag_hint'),
             style: Theme.of(context).textTheme.bodyLarge,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildActionButton(
+                icon: LucideIcons.image,
+                label: l10n.tr('pick_files'),
+                onTap: _pickFiles,
+              ),
+              const SizedBox(width: 16),
+              _buildActionButton(
+                icon: LucideIcons.folder,
+                label: l10n.tr('pick_dir'),
+                onTap: _pickDirectory,
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
           Text(
             l10n.tr('support_hint'),
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.of(context).textSecondary,
+                ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.of(context).surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.of(context).border),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: AppColors.of(context).primary),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            ),
+          ],
+        ),
       ),
     );
   }

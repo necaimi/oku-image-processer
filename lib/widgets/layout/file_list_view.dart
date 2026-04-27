@@ -5,6 +5,7 @@ import '../../theme.dart';
 import '../../providers/file_provider.dart';
 import '../../providers/processing_provider.dart';
 import '../../providers/l10n_provider.dart';
+import '../../providers/settings_provider.dart';
 
 class FileListView extends ConsumerWidget {
   const FileListView({super.key});
@@ -13,7 +14,11 @@ class FileListView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final files = ref.watch(fileListProvider.select((s) => s.files));
     final isProcessing = ref.watch(processingProvider.select((s) => s.isProcessing));
+    final fontSizeFactor = ref.watch(settingsProvider.select((s) => s.fontSizeFactor));
     final l10n = ref.watch(l10nProvider);
+
+    // 动态计算高度：基准 72.0 像素 * 字号缩放系数
+    final dynamicExtent = 72.0 * fontSizeFactor;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,81 +80,102 @@ class FileListView extends ConsumerWidget {
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: files.length,
-            // 移除固定 itemExtent，允许项目高度根据内容动态伸缩
+            // 使用动态计算的高度，完美适配大字号
+            itemExtent: dynamicExtent, 
             itemBuilder: (context, index) {
-              final item = files[index];
-              return RepaintBoundary(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.of(context).background,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.of(context).border),
-                    ),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            color: AppColors.of(context).surface,
-                            child: Icon(
-                              LucideIcons.image,
-                              size: 20,
-                              color: AppColors.of(context).textSecondary,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min, // 适应文字高度
-                            children: [
-                              Text(
-                                item.name,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${(item.size / 1024).toStringAsFixed(1)} KB',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.of(context).textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: Icon(
-                            LucideIcons.x,
-                            size: 16,
-                            color: isProcessing ? Colors.grey.withValues(alpha: 0.3) : AppColors.of(context).textSecondary,
-                          ),
-                          onPressed: isProcessing ? null : () => ref
-                              .read(fileListProvider.notifier)
-                              .removeFile(index),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              return FileItem(
+                index: index,
+                file: files[index],
+                isProcessing: isProcessing,
               );
             },
           ),
         ),
       ],
+    );
+  }
+}
+
+class FileItem extends ConsumerWidget {
+  final int index;
+  final SelectedFile file;
+  final bool isProcessing;
+
+  const FileItem({
+    super.key,
+    required this.index,
+    required this.file,
+    required this.isProcessing,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return RepaintBoundary(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.of(context).background,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.of(context).border),
+          ),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  color: AppColors.of(context).surface,
+                  child: Icon(
+                    LucideIcons.image,
+                    size: 20,
+                    color: AppColors.of(context).textSecondary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      file.name,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${(file.size / 1024).toStringAsFixed(1)} KB',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.of(context).textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: Icon(
+                  LucideIcons.x,
+                  size: 16,
+                  color: isProcessing ? Colors.grey.withValues(alpha: 0.3) : AppColors.of(context).textSecondary,
+                ),
+                onPressed: isProcessing ? null : () => ref
+                    .read(fileListProvider.notifier)
+                    .removeFile(index),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
