@@ -43,6 +43,12 @@ class Sidebar extends ConsumerWidget {
                 onTap: () => ref.read(navigationProvider.notifier).setView(AppView.history),
               ),
               _SidebarIcon(
+                icon: LucideIcons.stamp, 
+                isSelected: currentView == AppView.watermarkTemplates,
+                tooltip: l10n.tr('nav_watermark') ?? '水印模板',
+                onTap: () => ref.read(navigationProvider.notifier).setView(AppView.watermarkTemplates),
+              ),
+              _SidebarIcon(
                 icon: LucideIcons.settings, 
                 isSelected: currentView == AppView.settings,
                 tooltip: l10n.tr('nav_settings'),

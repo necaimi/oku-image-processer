@@ -10,6 +10,7 @@ import '../widgets/layout/history_list_view.dart';
 import '../widgets/layout/settings_view.dart';
 import '../widgets/layout/profile_view.dart';
 import '../widgets/layout/auth_view.dart';
+import '../widgets/layout/watermark_templates_view.dart';
 import '../providers/history_provider.dart';
 
 class MainLayout extends ConsumerWidget {
@@ -60,6 +61,8 @@ class MainLayout extends ConsumerWidget {
         return const DropzoneArea();
       case AppView.history:
         return const HistoryListView();
+      case AppView.watermarkTemplates:
+        return const WatermarkTemplatesView();
       case AppView.settings:
         return const SettingsView();
       case AppView.profile:

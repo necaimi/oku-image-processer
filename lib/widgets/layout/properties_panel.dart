@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:path/path.dart' as p;
 import '../../theme.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/file_provider.dart';
 import '../../providers/processing_provider.dart';
 import '../../providers/l10n_provider.dart';
+import '../../providers/watermark_template_provider.dart';
+import '../../providers/history_provider.dart';
 import '../common/format_chip.dart';
 import '../common/input_row.dart';
 import '../common/lock_icon_button.dart';
@@ -33,6 +34,7 @@ class PropertiesPanel extends ConsumerWidget {
     final fileState = ref.watch(fileListProvider);
     final proc = ref.watch(processingProvider);
     final l10n = ref.watch(l10nProvider);
+    final templates = ref.watch(watermarkTemplatesProvider);
 
     return Container(
       width: 300,
@@ -269,237 +271,43 @@ class PropertiesPanel extends ConsumerWidget {
                       ),
                       if (settings.enableWatermark) ...[
                         const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            FormatChip(
-                              label: l10n.tr('wm_text'),
-                              isSelected: settings.watermarkType == WatermarkType.text,
-                              onTap: () => notifier.setWatermarkType(WatermarkType.text),
-                            ),
-                            FormatChip(
-                              label: l10n.tr('wm_image'),
-                              isSelected: settings.watermarkType == WatermarkType.image,
-                              onTap: () => notifier.setWatermarkType(WatermarkType.image),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        if (settings.watermarkType == WatermarkType.text)
-                          InputRow(
-                            label: l10n.tr('wm_content'),
-                            value: settings.watermarkText,
-                            onChanged: (v) => notifier.setWatermarkText(v),
-                          )
-                        else
-                          GestureDetector(
-                            onTap: () async {
-                              final result = await FilePicker.pickFiles(
-                                type: FileType.image,
-                              );
-                              if (result != null) {
-                                notifier.setWatermarkImagePath(result.files.single.path);
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppColors.of(context).surface,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: AppColors.of(context).border),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: AppColors.of(context).surface,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.of(context).border),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: settings.activeTemplateId,
+                              hint: Text(
+                                l10n.tr('wm_pick_template') ?? '选择水印模板',
+                                style: TextStyle(fontSize: 13, color: AppColors.of(context).textSecondary),
                               ),
-                              child: Row(
-                                children: [
-                                  Icon(LucideIcons.image, size: 14, color: AppColors.of(context).primary),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      settings.watermarkImagePath != null 
-                                          ? p.basename(settings.watermarkImagePath!) 
-                                          : l10n.tr('wm_pick_img'),
-                                      style: TextStyle(fontSize: 12, color: AppColors.of(context).textSecondary),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              isExpanded: true,
+                              icon: const Icon(LucideIcons.chevron_down, size: 14),
+                              dropdownColor: AppColors.of(context).surface,
+                              borderRadius: BorderRadius.circular(12),
+                              items: templates.map((t) => DropdownMenuItem(
+                                value: t.id,
+                                child: Text(t.name, style: const TextStyle(fontSize: 13)),
+                              )).toList(),
+                              onChanged: (v) => notifier.setActiveTemplateId(v),
                             ),
                           ),
-                        const SizedBox(height: 24),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // --- 3x3 Position Grid ---
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  l10n.tr('wm_pos'),
-                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
-                                ),
-                                const SizedBox(height: 8),
-                                Container(
-                                  width: 84,
-                                  height: 84,
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.of(context).surface,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: AppColors.of(context).border),
-                                  ),
-                                  child: GridView.count(
-                                    shrinkWrap: true,
-                                    crossAxisCount: 3,
-                                    mainAxisSpacing: 2,
-                                    crossAxisSpacing: 2,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    children: WatermarkPosition.values.where((p) => p != WatermarkPosition.tile).map((pos) {
-                                      final isSelected = settings.watermarkPosition == pos;
-                                      return GestureDetector(
-                                        onTap: () => notifier.setWatermarkPosition(pos),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: isSelected ? AppColors.of(context).primary : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: Container(
-                                            width: 4,
-                                            height: 4,
-                                            decoration: BoxDecoration(
-                                              color: isSelected ? Colors.white : AppColors.of(context).textSecondary.withValues(alpha: 0.5),
-                                              shape: BoxShape.circle,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 16),
-                            // --- Tile Toggle & Spacing ---
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    l10n.tr('theme_mode').contains('外观') ? '平铺模式' : 'TILE MODE', // Simplified tile label
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  GestureDetector(
-                                    onTap: () => notifier.setWatermarkPosition(
-                                      settings.watermarkPosition == WatermarkPosition.tile 
-                                        ? WatermarkPosition.bottomRight 
-                                        : WatermarkPosition.tile
-                                    ),
-                                    child: Container(
-                                      height: 40,
-                                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                                      decoration: BoxDecoration(
-                                        color: settings.watermarkPosition == WatermarkPosition.tile ? AppColors.of(context).primary : AppColors.of(context).surface,
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: settings.watermarkPosition == WatermarkPosition.tile ? AppColors.of(context).primary : AppColors.of(context).border),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            LucideIcons.layout_grid,
-                                            size: 16,
-                                            color: settings.watermarkPosition == WatermarkPosition.tile ? Colors.white : AppColors.of(context).textSecondary,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            l10n.tr('wm_enable').contains('启用') ? '全屏平铺' : 'Tile',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: settings.watermarkPosition == WatermarkPosition.tile ? Colors.white : AppColors.of(context).textSecondary,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  if (settings.watermarkPosition == WatermarkPosition.tile) ...[
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          l10n.tr('wm_spacing'),
-                                          style: TextStyle(fontSize: 12, color: AppColors.of(context).textSecondary),
-                                        ),
-                                        Text('${(settings.watermarkSpacing * 100).toInt()}%', style: TextStyle(fontSize: 12, color: AppColors.of(context).primary)),
-                                      ],
-                                    ),
-                                    SliderTheme(
-                                      data: SliderTheme.of(context).copyWith(
-                                        trackHeight: 2,
-                                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-                                      ),
-                                      child: Slider(
-                                        value: settings.watermarkSpacing,
-                                        min: 0.1,
-                                        max: 3.0,
-                                        onChanged: (v) => notifier.setWatermarkSpacing(v),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              l10n.tr('wm_opacity'),
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
-                            ),
-                            Text('${(settings.watermarkOpacity * 100).toInt()}%', style: TextStyle(fontSize: 12, color: AppColors.of(context).primary)),
-                          ],
-                        ),
-                        Slider(
-                          value: settings.watermarkOpacity,
-                          onChanged: (v) => notifier.setWatermarkOpacity(v),
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              settings.watermarkType == WatermarkType.image ? l10n.tr('wm_scale') : l10n.tr('wm_size'),
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
-                            ),
-                            Text(
-                              settings.watermarkType == WatermarkType.image 
-                                  ? '${(settings.watermarkScale * 100).toInt()}%'
-                                  : '${settings.watermarkFontSize}px', 
-                              style: TextStyle(fontSize: 12, color: AppColors.of(context).primary),
-                            ),
-                          ],
-                        ),
-                        if (settings.watermarkType == WatermarkType.image)
-                          Slider(
-                            value: settings.watermarkScale,
-                            min: 0.05,
-                            max: 0.5,
-                            onChanged: (v) => notifier.setWatermarkScale(v),
-                          )
-                        else
-                          Slider(
-                            value: settings.watermarkFontSize.toDouble(),
-                            min: 12,
-                            max: 200,
-                            onChanged: (v) => notifier.setWatermarkFontSize(v.toInt()),
+                        TextButton.icon(
+                          onPressed: () => ref.read(navigationProvider.notifier).setView(AppView.watermarkTemplates),
+                          icon: const Icon(LucideIcons.settings, size: 12),
+                          label: Text(l10n.tr('manage_templates') ?? '管理模板', style: const TextStyle(fontSize: 12)),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
+                        ),
                       ],
                     ],
                   ),

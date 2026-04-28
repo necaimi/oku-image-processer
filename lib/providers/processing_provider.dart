@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'file_provider.dart';
 import 'settings_provider.dart';
 import 'history_provider.dart';
+import 'watermark_template_provider.dart';
 import 'package:flutter/foundation.dart';
 import '../src/native/image_processor_bindings.dart';
 
@@ -400,6 +401,16 @@ class ProcessingNotifier extends Notifier<ProcessingState> {
       else if (settings.dimensionLock == DimensionLock.height) targetW = 0;
     }
 
+    WatermarkTemplate? template;
+    if (settings.enableWatermark && settings.activeTemplateId != null) {
+      final templates = ref.read(watermarkTemplatesProvider);
+      try {
+        template = templates.firstWhere((t) => t.id == settings.activeTemplateId);
+      } catch (_) {
+        // Template not found
+      }
+    }
+
     return ProcessingParams(
       inputPath: inputPath,
       outputPath: outputPath,
@@ -407,15 +418,15 @@ class ProcessingNotifier extends Notifier<ProcessingState> {
       height: targetH,
       quality: (settings.quality * 100).toInt(),
       format: settings.format.index,
-      enableWm: settings.enableWatermark,
-      wmType: settings.watermarkType.index,
-      wmText: settings.watermarkText,
-      wmImagePath: settings.watermarkImagePath,
-      wmOpacity: settings.watermarkOpacity,
-      wmPosition: settings.watermarkPosition.index,
-      wmScale: settings.watermarkScale,
-      wmFontSize: settings.watermarkFontSize,
-      wmSpacing: settings.watermarkSpacing,
+      enableWm: template != null,
+      wmType: template?.type.index ?? 0,
+      wmText: template?.text ?? '',
+      wmImagePath: template?.imagePath,
+      wmOpacity: template?.opacity ?? 0.5,
+      wmPosition: template?.position.index ?? 0,
+      wmScale: template?.scale ?? 0.2,
+      wmFontSize: template?.fontSize ?? 40,
+      wmSpacing: template?.spacing ?? 1.0,
     );
   }
 }

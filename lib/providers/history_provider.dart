@@ -34,7 +34,7 @@ class HistoryNotifier extends Notifier<List<HistoryItem>> {
 final historyProvider = NotifierProvider<HistoryNotifier, List<HistoryItem>>(HistoryNotifier.new);
 
 // 用于侧边栏切换视图的状态
-enum AppView { main, history, settings, profile, login }
+enum AppView { main, history, watermarkTemplates, settings, profile, login }
 
 class NavigationNotifier extends Notifier<AppView> {
   @override

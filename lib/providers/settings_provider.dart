@@ -30,14 +30,7 @@ class ProcessingSettings {
 
   // Watermark Settings
   final bool enableWatermark;
-  final WatermarkType watermarkType;
-  final String watermarkText;
-  final String? watermarkImagePath;
-  final double watermarkOpacity;
-  final WatermarkPosition watermarkPosition;
-  final double watermarkScale; // For image: 0.1 - 1.0 of main image width
-  final int watermarkFontSize; // For text
-  final double watermarkSpacing; // New: Spacing for tile mode
+  final String? activeTemplateId; // 关联到具体的水印模板
 
   ProcessingSettings({
     this.format = ImageFormat.jpg,
@@ -52,20 +45,13 @@ class ProcessingSettings {
     this.fontSizeFactor = 1.0,
     this.themeMode = ThemeMode.dark,
     this.enableWatermark = false,
-    this.watermarkType = WatermarkType.text,
-    this.watermarkText = 'Oku Image',
-    this.watermarkImagePath,
-    this.watermarkOpacity = 0.5,
-    this.watermarkPosition = WatermarkPosition.bottomRight,
-    this.watermarkScale = 0.2,
-    this.watermarkFontSize = 40,
-    this.watermarkSpacing = 1.0,
+    this.activeTemplateId,
     double? aspectRatio,
   }) : aspectRatio = aspectRatio ?? (1920 / 1080);
 
   Map<String, dynamic> toJson() => {
     'format': format.index,
-    'exportMode': exportMode.index,
+    'export_mode': exportMode.index,
     'customOutputPath': customOutputPath,
     'width': width,
     'height': height,
@@ -77,39 +63,25 @@ class ProcessingSettings {
     'fontSizeFactor': fontSizeFactor,
     'themeMode': themeMode.index,
     'enableWatermark': enableWatermark,
-    'watermarkType': watermarkType.index,
-    'watermarkText': watermarkText,
-    'watermarkImagePath': watermarkImagePath,
-    'watermarkOpacity': watermarkOpacity,
-    'watermarkPosition': watermarkPosition.index,
-    'watermarkScale': watermarkScale,
-    'watermarkFontSize': watermarkFontSize,
-    'watermarkSpacing': watermarkSpacing,
+    'activeTemplateId': activeTemplateId,
   };
 
   factory ProcessingSettings.fromJson(Map<String, dynamic> json) {
     return ProcessingSettings(
       format: ImageFormat.values[json['format'] ?? 0],
-      exportMode: ExportMode.values[json['exportMode'] ?? 0],
+      exportMode: ExportMode.values[json['export_mode'] ?? 0],
       customOutputPath: json['customOutputPath'],
       width: json['width'] ?? 1920,
       height: json['height'] ?? 1080,
-      quality: json['quality'] ?? 0.8,
+      quality: (json['quality'] ?? 0.8).toDouble(),
       lockAspectRatio: json['lockAspectRatio'] ?? true,
-      aspectRatio: json['aspectRatio'] ?? (1920 / 1080),
+      aspectRatio: (json['aspectRatio'] ?? (1920 / 1080)).toDouble(),
       dimensionLock: DimensionLock.values[json['dimensionLock'] ?? 0],
       language: json['language'] ?? 'zh',
-      fontSizeFactor: json['fontSizeFactor'] ?? 1.0,
-      themeMode: ThemeMode.values[json['themeMode'] ?? 2], // Default to dark (index 2)
+      fontSizeFactor: (json['fontSizeFactor'] ?? 1.0).toDouble(),
+      themeMode: ThemeMode.values[json['themeMode'] ?? 2],
       enableWatermark: json['enableWatermark'] ?? false,
-      watermarkType: WatermarkType.values[json['watermarkType'] ?? 0],
-      watermarkText: json['watermarkText'] ?? 'Oku Image',
-      watermarkImagePath: json['watermarkImagePath'],
-      watermarkOpacity: json['watermarkOpacity'] ?? 0.5,
-      watermarkPosition: WatermarkPosition.values[json['watermarkPosition'] ?? 8],
-      watermarkScale: json['watermarkScale'] ?? 0.2,
-      watermarkFontSize: json['watermarkFontSize'] ?? 40,
-      watermarkSpacing: json['watermarkSpacing'] ?? 1.0,
+      activeTemplateId: json['activeTemplateId'],
     );
   }
 
@@ -127,14 +99,7 @@ class ProcessingSettings {
     double? fontSizeFactor,
     ThemeMode? themeMode,
     bool? enableWatermark,
-    WatermarkType? watermarkType,
-    String? watermarkText,
-    String? watermarkImagePath,
-    double? watermarkOpacity,
-    WatermarkPosition? watermarkPosition,
-    double? watermarkScale,
-    int? watermarkFontSize,
-    double? watermarkSpacing,
+    String? activeTemplateId,
   }) {
     return ProcessingSettings(
       format: format ?? this.format,
@@ -150,14 +115,7 @@ class ProcessingSettings {
       fontSizeFactor: fontSizeFactor ?? this.fontSizeFactor,
       themeMode: themeMode ?? this.themeMode,
       enableWatermark: enableWatermark ?? this.enableWatermark,
-      watermarkType: watermarkType ?? this.watermarkType,
-      watermarkText: watermarkText ?? this.watermarkText,
-      watermarkImagePath: watermarkImagePath ?? this.watermarkImagePath,
-      watermarkOpacity: watermarkOpacity ?? this.watermarkOpacity,
-      watermarkPosition: watermarkPosition ?? this.watermarkPosition,
-      watermarkScale: watermarkScale ?? this.watermarkScale,
-      watermarkFontSize: watermarkFontSize ?? this.watermarkFontSize,
-      watermarkSpacing: watermarkSpacing ?? this.watermarkSpacing,
+      activeTemplateId: activeTemplateId ?? this.activeTemplateId,
     );
   }
 }
@@ -167,7 +125,6 @@ class SettingsNotifier extends Notifier<ProcessingSettings> {
   
   @override
   ProcessingSettings build() {
-    // 初始同步返回默认值，随后触发异步加载
     _loadSettings();
     return ProcessingSettings();
   }
@@ -248,14 +205,7 @@ class SettingsNotifier extends Notifier<ProcessingSettings> {
 
   // Watermark updates
   void setEnableWatermark(bool enable) => updateState(state.copyWith(enableWatermark: enable));
-  void setWatermarkType(WatermarkType type) => updateState(state.copyWith(watermarkType: type));
-  void setWatermarkText(String text) => updateState(state.copyWith(watermarkText: text));
-  void setWatermarkImagePath(String? path) => updateState(state.copyWith(watermarkImagePath: path));
-  void setWatermarkOpacity(double opacity) => updateState(state.copyWith(watermarkOpacity: opacity));
-  void setWatermarkPosition(WatermarkPosition pos) => updateState(state.copyWith(watermarkPosition: pos));
-  void setWatermarkScale(double scale) => updateState(state.copyWith(watermarkScale: scale));
-  void setWatermarkFontSize(int size) => updateState(state.copyWith(watermarkFontSize: size));
-  void setWatermarkSpacing(double spacing) => updateState(state.copyWith(watermarkSpacing: spacing));
+  void setActiveTemplateId(String? id) => updateState(state.copyWith(activeTemplateId: id));
 }
 
 final settingsProvider = NotifierProvider<SettingsNotifier, ProcessingSettings>(SettingsNotifier.new);
